@@ -39,13 +39,11 @@ const pick = (arr, n) => {
   return out;
 };
 
-function buildCell(rootPc, quality, chaos) {
+function buildCell(rootPc, quality) {
   const q = QUALITIES[quality];
-  const required = chaos ? [] : q.required;
-  const pool = chaos ? [1,2,3,4,5,6,7,8,9,10,11] : q.pool;
-  const fill = pick(pool, 5 - 1 - required.length);
-  const intervals = Array.from(new Set([0, ...required, ...fill])).sort((a,b)=>a-b);
-  return { intervals, defining: new Set(required) };
+  const fill = pick(q.pool, 5 - 1 - q.required.length);
+  const intervals = Array.from(new Set([0, ...q.required, ...fill])).sort((a,b)=>a-b);
+  return { intervals, defining: new Set(q.required) };
 }
 
 // Build an ascending fingering: 5 notes (1 oct) or 10 notes (2 oct).
@@ -145,10 +143,9 @@ const INK = "#1a1f2e", INDIGO = "#6366f1", GOLD = "#e8a33d";
 export default function RiffCells() {
   const [root, setRoot] = useState(9);
   const [quality, setQuality] = useState("dom7");
-  const [chaos, setChaos] = useState(false);
   const [showDeg, setShowDeg] = useState(true);
   const [octaves, setOctaves] = useState(1);
-  const [cell, setCell] = useState(() => buildCell(9, "dom7", false));
+  const [cell, setCell] = useState(() => buildCell(9, "dom7"));
   const [prompt, setPrompt] = useState(PROMPTS[0]);
   const [drone, setDrone] = useState(false);
   const audio = useAudio();
@@ -159,16 +156,15 @@ export default function RiffCells() {
   const start = minFret, nFrets = Math.max(1, maxFret - minFret + 1);
   const placed = new Map(shape.map(p => [p.si + "-" + p.fret, p]));
 
-  const regenerate = useCallback((r = root, q = quality, ch = chaos) => {
-    setCell(buildCell(r, q, ch));
+  const regenerate = useCallback((r = root, q = quality) => {
+    setCell(buildCell(r, q));
     setPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
-  }, [root, quality, chaos]);
+  }, [root, quality]);
 
   useEffect(() => { if (drone) audio.startDrone(root); else audio.stopDrone(); }, [drone, root]); // eslint-disable-line
 
-  const onRoot = (pc) => { setRoot(pc); regenerate(pc, quality, chaos); };
-  const onQuality = (q) => { setQuality(q); regenerate(root, q, chaos); };
-  const onChaos = () => { const v = !chaos; setChaos(v); regenerate(root, quality, v); };
+  const onRoot = (pc) => { setRoot(pc); regenerate(pc, quality); };
+  const onQuality = (q) => { setQuality(q); regenerate(root, q); };
 
   // geometry (scales to span)
   const FW = Math.max(40, Math.min(92, Math.round(360 / nFrets)));
@@ -213,12 +209,11 @@ export default function RiffCells() {
         ))}
       </div>
 
-      {/* quality + chaos */}
+      {/* chord quality */}
       <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:10, alignItems:"center" }}>
         {Object.entries(QUALITIES).map(([k, v]) => (
-          <Btn key={k} active={quality===k && !chaos} onClick={() => onQuality(k)}>{v.label}</Btn>
+          <Btn key={k} active={quality===k} onClick={() => onQuality(k)}>{v.label}</Btn>
         ))}
-        <Btn active={chaos} onClick={onChaos}>Chaos</Btn>
       </div>
 
       {/* octaves + label toggle */}
@@ -301,7 +296,7 @@ export default function RiffCells() {
         })}
       </div>
       <p style={{ fontSize:11.5, color:"#8c91a3", margin:"0 0 14px" }}>
-        Gold = root. Gold-ringed = the notes that make it sound {chaos ? "however it sounds" : QUALITIES[quality].label.toLowerCase()}. Tap any note to hear it.
+        Gold = root. Gold-ringed = the notes that make it sound {QUALITIES[quality].label.toLowerCase()}. Tap any note to hear it.
       </p>
 
       {/* controls */}
