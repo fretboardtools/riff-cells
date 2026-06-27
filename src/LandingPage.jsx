@@ -68,37 +68,6 @@ export default function LandingPage() {
         </p>
       </section>
 
-      {/* OPT-IN */}
-      <section style={{ ...wrap, paddingTop: 34, paddingBottom: 20 }}>
-        <div style={{ background: "#eceaff", borderRadius: 16, padding: "28px 26px", textAlign: "center" }}>
-          <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: 22, margin: "0 0 8px" }}>
-            Want the full improv practice pack?
-          </h2>
-          <p style={{ fontSize: 15.5, color: MUTE, maxWidth: 460, margin: "0 auto 18px" }}>
-            Get the free printable routine plus a starter set of must-know cells, straight to your inbox.
-            No spam, unsubscribe any time.
-          </p>
-
-          {/* ===== PASTE YOUR EMAILOCTOPUS FORM EMBED HERE ===== */}
-          {/* Replace this placeholder with the embed code from EmailOctopus → Forms → Embed. */}
-          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-            <input
-              type="email"
-              placeholder="you@email.com"
-              style={{ flex: "1 1 240px", maxWidth: 300, padding: "12px 14px", borderRadius: 10,
-                border: "1px solid #cfcfe0", fontSize: 15, fontFamily: "Inter, sans-serif" }}
-            />
-            <button
-              style={{ border: "none", background: INK, color: "#fff", borderRadius: 10, padding: "12px 22px",
-                fontSize: 15, fontWeight: 600, fontFamily: "Poppins, sans-serif", cursor: "pointer" }}
-            >
-              Send it to me
-            </button>
-          </div>
-          {/* ================================================== */}
-        </div>
-      </section>
-
       {/* FOOTER */}
       <footer style={{ ...wrap, paddingBottom: 50, textAlign: "center", color: "#9aa0b4", fontSize: 13 }}>
         © {new Date().getFullYear()} Unlock the Guitar
