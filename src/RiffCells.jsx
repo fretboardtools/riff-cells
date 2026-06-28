@@ -294,18 +294,23 @@ export default function App() {
       </p>
 
       {showUnlock && !isPro && (
-        <div style={{ background:"#fff", border:`1px solid ${GOLD}`, borderRadius:14, padding:"16px 16px 14px", marginBottom:16 }}>
-          <h3 style={{ margin:"0 0 4px", fontFamily:"Poppins, sans-serif", fontSize:16 }}>Unlock Riff Cells Pro</h3>
-          <p style={{ margin:"0 0 12px", fontSize:13, color:"#5b5f6e" }}>
-            Practice Mode, alternate tunings, full-neck roam mode, a saved-cells library and five extra chord qualities. One-time purchase, yours for good.
-          </p>
-          <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:10 }}>
-            <input value={keyInput} onChange={e => setKeyInput(e.target.value)} placeholder="Paste your license key"
-              style={{ flex:"1 1 200px", padding:"10px 12px", borderRadius:10, border:"1px solid #d7d8e0", fontSize:14, fontFamily:"Inter, sans-serif" }} />
-            <button onClick={activate} disabled={verifying} style={{ cursor:"pointer", border:"none", background:INK, color:"#fff", borderRadius:10, padding:"10px 18px", fontSize:14, fontWeight:600, fontFamily:"Poppins, sans-serif", opacity:verifying?0.6:1 }}>{verifying ? "Checking…" : "Activate"}</button>
+        <div onClick={() => setShowUnlock(false)} style={{ position:"fixed", inset:0, background:"rgba(10,12,20,.55)", display:"flex", alignItems:"center", justifyContent:"center", padding:16, zIndex:50 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background:"#fff", border:`1px solid ${GOLD}`, borderRadius:14, padding:"18px 18px 16px", width:"100%", maxWidth:380, boxShadow:"0 16px 48px rgba(0,0,0,.35)" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:4 }}>
+              <h3 style={{ margin:0, fontFamily:"Poppins, sans-serif", fontSize:16 }}>Unlock Riff Cells Pro</h3>
+              <button onClick={() => setShowUnlock(false)} aria-label="Close" style={{ cursor:"pointer", border:"none", background:"none", fontSize:22, lineHeight:1, color:MUTE, padding:0, marginTop:-2 }}>×</button>
+            </div>
+            <p style={{ margin:"0 0 12px", fontSize:13, color:"#5b5f6e" }}>
+              Practice Mode, alternate tunings, full-neck roam mode, a saved-cells library and extra chord qualities. One-time purchase, yours for good.
+            </p>
+            <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:10 }}>
+              <input value={keyInput} onChange={e => setKeyInput(e.target.value)} placeholder="Paste your license key"
+                style={{ flex:"1 1 180px", padding:"10px 12px", borderRadius:10, border:"1px solid #d7d8e0", fontSize:14, fontFamily:"Inter, sans-serif" }} />
+              <button onClick={activate} disabled={verifying} style={{ cursor:"pointer", border:"none", background:INK, color:"#fff", borderRadius:10, padding:"10px 18px", fontSize:14, fontWeight:600, fontFamily:"Poppins, sans-serif", opacity:verifying?0.6:1 }}>{verifying ? "Checking…" : "Activate"}</button>
+            </div>
+            {unlockMsg && <p style={{ margin:"0 0 8px", fontSize:13, color: unlockMsg.ok ? "#15803d" : "#b91c1c" }}>{unlockMsg.text}</p>}
+            <a href={PRO_BUY_URL} target="_blank" rel="noreferrer" style={{ fontSize:13, fontWeight:600, color:INDIGO, textDecoration:"none" }}>Don't have a key? Get Pro →</a>
           </div>
-          {unlockMsg && <p style={{ margin:"0 0 8px", fontSize:13, color: unlockMsg.ok ? "#15803d" : "#b91c1c" }}>{unlockMsg.text}</p>}
-          <a href={PRO_BUY_URL} target="_blank" rel="noreferrer" style={{ fontSize:13, fontWeight:600, color:INDIGO, textDecoration:"none" }}>Don't have a key? Get Pro →</a>
         </div>
       )}
 
