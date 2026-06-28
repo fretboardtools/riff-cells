@@ -4,8 +4,8 @@ import { Volume2, VolumeX, Shuffle, Play, Lock, Crown, Square, Star, Trash2 } fr
 /* ============================================================================
    DEV FLAG — set to false before you deploy, or all Pro features are free.
 ============================================================================ */
-const DEV_UNLOCK_ALL = true;
-const PRO_BUY_URL = "https://payhip.com/b/YOUR-PRO-PRODUCT";
+const DEV_UNLOCK_ALL = false;
+const PRO_BUY_URL = "https://payhip.com/b/RAJIP";
 
 const store = {
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
