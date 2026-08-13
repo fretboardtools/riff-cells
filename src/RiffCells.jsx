@@ -5,7 +5,7 @@ import { Volume2, VolumeX, Shuffle, Play, Lock, Crown, Square, Star, Trash2 } fr
    DEV FLAG — set to false before you deploy, or all Pro features are free.
 ============================================================================ */
 const DEV_UNLOCK_ALL = false;
-const PRO_BUY_URL = "https://payhip.com/b/RAJIP";
+const PRO_BUY_URL = "https://payhip.com/b/YOUR-PRO-PRODUCT";
 
 const store = {
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
@@ -151,7 +151,13 @@ function useAudio() {
 }
 
 // ---- component -------------------------------------------------------------
-const INK = "#1a1f2e", INDIGO = "#6366f1", GOLD = "#e8a33d", MUTE = "#8c91a3";
+const INK = "#2b2926", GREY = "#8a8781", LINE = "#e2dfda", FILL = "#f1efeb";
+const NECK = "#f3f1ec", FRET = "#ccc7bf", STRINGLINE = "#b3aea6", INLAY = "#e0dbd3";
+const ROOT = "#d98a4f", NOTECOL = "#7d88c4";
+const RAD = 2;
+const HEAD = "'Archivo', system-ui, sans-serif";
+const BODY = "'Inter', system-ui, sans-serif";
+const MUTE = GREY;
 
 export default function App() {
   const [isPro, setIsPro] = useState(() => store.get("rc_pro") === "1");
@@ -160,7 +166,7 @@ export default function App() {
   const [root, setRoot] = useState(9);
   const [quality, setQuality] = useState("dom7");
   const [tuning, setTuning] = useState("standard");
-  const [view, setView] = useState("shape"); // shape | roam
+  const [view, setView] = useState("shape");
   const [showDeg, setShowDeg] = useState(true);
   const [octaves, setOctaves] = useState(1);
   const [cell, setCell] = useState(() => buildCell(9, "dom7"));
@@ -186,7 +192,6 @@ export default function App() {
   const shape = useMemo(() => makeShape(STR, root, cell.intervals, octaves), [STR, root, cell, octaves]);
   const pcs = useMemo(() => new Set(cell.intervals.map(iv => (root + iv) % 12)), [cell, root]);
 
-  // build the lit notes + board window depending on view
   let lit, start, nFrets;
   if (view === "roam") {
     start = 1; nFrets = 15; lit = [];
@@ -254,7 +259,6 @@ export default function App() {
     finally { setVerifying(false); }
   };
 
-  // geometry
   const FW = Math.max(28, Math.min(92, Math.round(420 / nFrets)));
   const R  = Math.max(11, Math.min(17, Math.round(FW / 2) - 6));
   const ML = 30, MT = 26, SG = 44;
@@ -262,85 +266,94 @@ export default function App() {
   const cols = Array.from({ length: nFrets }, (_, i) => i);
   const inlayFrets = [3,5,7,9,12,15,17];
 
+  const eyebrow = { fontSize:10, letterSpacing:2, textTransform:"uppercase", color:GREY, fontWeight:700, fontFamily:HEAD };
+  const label = { ...eyebrow, display:"block", marginBottom:7 };
+  const rule = { border:"none", borderTop:`1px solid ${LINE}`, margin:"18px 0" };
+
   const Btn = ({ active, children, ...p }) => (
-    <button {...p} style={{ cursor:"pointer", border:"1px solid", borderColor: active ? INDIGO : "#d7d8e0",
-      background: active ? INDIGO : "#fff", color: active ? "#fff" : INK, borderRadius:10, padding:"7px 12px",
-      fontSize:13, fontWeight:600, fontFamily:"Inter, system-ui, sans-serif", transition:"all .12s",
+    <button {...p} style={{ cursor:"pointer", border:"1px solid", borderColor: active ? INK : LINE,
+      background: active ? INK : "#fff", color: active ? "#fff" : INK, borderRadius:RAD, padding:"7px 12px",
+      fontSize:13, fontWeight:600, fontFamily:BODY, transition:"all .1s",
       display:"inline-flex", alignItems:"center", gap:5 }}>{children}</button>
   );
+  const segBtn = (on) => ({ cursor:"pointer", border:"none", borderRadius:RAD, padding:"6px 13px", fontSize:13, fontWeight:600,
+    background: on ? INK : "transparent", color: on ? "#fff" : GREY, fontFamily:BODY });
 
   return (
-    <div style={{ fontFamily:"Inter, system-ui, sans-serif", color:INK, background:"#f4f4f9", padding:"22px", borderRadius:16, maxWidth:560, margin:"0 auto" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap');
-        button:focus-visible{outline:2px solid ${GOLD};outline-offset:2px}`}</style>
+    <div style={{ fontFamily:BODY, color:INK, background:"transparent", padding:"8px 0", maxWidth:600, margin:"0 auto" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+        button:focus-visible{outline:2px solid ${INK};outline-offset:2px}`}</style>
 
       {DEV_UNLOCK_ALL && (
-        <div style={{ background:"#b91c1c", color:"#fff", fontSize:12, fontWeight:600, textAlign:"center", padding:"6px 10px", borderRadius:8, marginBottom:14 }}>
+        <div style={{ background:"#b91c1c", color:"#fff", fontSize:12, fontWeight:600, textAlign:"center", padding:"6px 10px", marginBottom:14 }}>
           DEV: Pro unlocked for preview — set DEV_UNLOCK_ALL = false before deploying.
         </div>
       )}
 
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
         <div>
-          <span style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color:INDIGO, fontWeight:600 }}>Unlock the Guitar</span>
-          <h1 style={{ fontFamily:"Poppins, sans-serif", fontWeight:700, fontSize:26, margin:"2px 0" }}>Riff Cells</h1>
+          <span style={eyebrow}>Unlock the Guitar</span>
+          <h1 style={{ fontFamily:HEAD, fontWeight:800, fontSize:27, letterSpacing:0.3, textTransform:"uppercase", margin:"3px 0 0", color:INK }}>Riff Cells</h1>
         </div>
         {isPro
-          ? <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, fontWeight:600, color:GOLD, background:"#fff7e9", border:`1px solid ${GOLD}`, borderRadius:20, padding:"5px 10px", height:"fit-content" }}><Crown size={14}/> Pro</span>
-          : <button onClick={() => setShowUnlock(s => !s)} style={{ cursor:"pointer", display:"inline-flex", alignItems:"center", gap:5, fontSize:12.5, fontWeight:600, color:"#fff", background:GOLD, border:"none", borderRadius:20, padding:"7px 13px", height:"fit-content", fontFamily:"Inter, sans-serif" }}><Crown size={14}/> Unlock Pro</button>}
+          ? <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#fff", background:ROOT, borderRadius:RAD, padding:"5px 10px", height:"fit-content", fontFamily:BODY, letterSpacing:1, textTransform:"uppercase" }}><Crown size={13}/> Pro</span>
+          : <button onClick={() => setShowUnlock(s => !s)} style={{ cursor:"pointer", display:"inline-flex", alignItems:"center", gap:5, fontSize:11, fontWeight:700, color:"#fff", background:ROOT, border:"none", borderRadius:RAD, padding:"8px 13px", height:"fit-content", fontFamily:BODY, letterSpacing:0.5, textTransform:"uppercase" }}><Crown size={13}/> Unlock Pro</button>}
       </div>
-      <p style={{ margin:"6px 0 16px", fontSize:13.5, color:"#5b5f6e", maxWidth:430 }}>
+      <p style={{ margin:"10px 0 0", fontSize:14, color:GREY, maxWidth:440, lineHeight:1.55 }}>
         A guitar improvisation tool that deals you a fresh five-note cell every time. Turn on the drone and make lines.
       </p>
+      <hr style={rule} />
 
       {showUnlock && !isPro && (
-        <div onClick={() => setShowUnlock(false)} style={{ position:"fixed", inset:0, background:"rgba(10,12,20,.55)", display:"flex", alignItems:"center", justifyContent:"center", padding:16, zIndex:50 }}>
-          <div onClick={e => e.stopPropagation()} style={{ background:"#fff", border:`1px solid ${GOLD}`, borderRadius:14, padding:"18px 18px 16px", width:"100%", maxWidth:380, boxShadow:"0 16px 48px rgba(0,0,0,.35)" }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:4 }}>
-              <h3 style={{ margin:0, fontFamily:"Poppins, sans-serif", fontSize:16 }}>Unlock Riff Cells Pro</h3>
-              <button onClick={() => setShowUnlock(false)} aria-label="Close" style={{ cursor:"pointer", border:"none", background:"none", fontSize:22, lineHeight:1, color:MUTE, padding:0, marginTop:-2 }}>×</button>
+        <div onClick={() => setShowUnlock(false)} style={{ position:"fixed", inset:0, background:"rgba(30,25,20,.5)", display:"flex", alignItems:"center", justifyContent:"center", padding:16, zIndex:50 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background:"#fff", border:`1px solid ${INK}`, borderRadius:RAD, padding:"20px", width:"100%", maxWidth:380 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
+              <h3 style={{ margin:0, fontFamily:HEAD, fontWeight:800, fontSize:18, textTransform:"uppercase", letterSpacing:0.3 }}>Unlock Pro</h3>
+              <button onClick={() => setShowUnlock(false)} aria-label="Close" style={{ cursor:"pointer", border:"none", background:"none", fontSize:22, lineHeight:1, color:GREY, padding:0 }}>×</button>
             </div>
-            <p style={{ margin:"0 0 12px", fontSize:13, color:"#5b5f6e" }}>
+            <p style={{ margin:"0 0 14px", fontSize:13, color:GREY, lineHeight:1.55 }}>
               Practice Mode, alternate tunings, full-neck roam mode, a saved-cells library and extra chord qualities. One-time purchase, yours for good.
             </p>
-            <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:10 }}>
+            <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:12 }}>
               <input value={keyInput} onChange={e => setKeyInput(e.target.value)} placeholder="Paste your license key"
-                style={{ flex:"1 1 180px", padding:"10px 12px", borderRadius:10, border:"1px solid #d7d8e0", fontSize:14, fontFamily:"Inter, sans-serif" }} />
-              <button onClick={activate} disabled={verifying} style={{ cursor:"pointer", border:"none", background:INK, color:"#fff", borderRadius:10, padding:"10px 18px", fontSize:14, fontWeight:600, fontFamily:"Poppins, sans-serif", opacity:verifying?0.6:1 }}>{verifying ? "Checking…" : "Activate"}</button>
+                style={{ flex:"1 1 180px", padding:"10px 12px", borderRadius:RAD, border:`1px solid ${LINE}`, fontSize:14, fontFamily:BODY }} />
+              <button onClick={activate} disabled={verifying} style={{ cursor:"pointer", border:"none", background:INK, color:"#fff", borderRadius:RAD, padding:"10px 18px", fontSize:14, fontWeight:700, fontFamily:BODY, opacity:verifying?0.6:1 }}>{verifying ? "Checking…" : "Activate"}</button>
             </div>
-            {unlockMsg && <p style={{ margin:"0 0 8px", fontSize:13, color: unlockMsg.ok ? "#15803d" : "#b91c1c" }}>{unlockMsg.text}</p>}
-            <a href={PRO_BUY_URL} target="_blank" rel="noreferrer" style={{ fontSize:13, fontWeight:600, color:INDIGO, textDecoration:"none" }}>Don't have a key? Get Pro →</a>
+            {unlockMsg && <p style={{ margin:"0 0 10px", fontSize:13, color: unlockMsg.ok ? "#15803d" : "#b91c1c" }}>{unlockMsg.text}</p>}
+            <a href={PRO_BUY_URL} target="_blank" rel="noreferrer" style={{ fontSize:13, fontWeight:700, color:ROOT, textDecoration:"underline" }}>Don't have a key? Get Pro →</a>
           </div>
         </div>
       )}
 
       {/* root */}
-      <div style={{ display:"flex", flexWrap:"wrap", gap:5, marginBottom:12 }}>
+      <span style={label}>Root</span>
+      <div style={{ display:"flex", flexWrap:"wrap", gap:5, marginBottom:16 }}>
         {NOTE_NAMES.map((n, pc) => (
-          <button key={pc} onClick={() => onRoot(pc)} style={{ cursor:"pointer", width:34, height:34, borderRadius:9, fontSize:12.5, fontWeight:600,
-            border:"1px solid", borderColor: root===pc ? GOLD : "#d7d8e0", background: root===pc ? GOLD : "#fff", color: root===pc ? INK : "#5b5f6e", fontFamily:"Inter, sans-serif" }}>{n}</button>
+          <button key={pc} onClick={() => onRoot(pc)} style={{ cursor:"pointer", width:34, height:34, borderRadius:RAD, fontSize:12.5, fontWeight:600,
+            border:"1px solid", borderColor: root===pc ? INK : LINE, background: root===pc ? INK : "#fff", color: root===pc ? "#fff" : GREY, fontFamily:BODY }}>{n}</button>
         ))}
       </div>
 
       {/* chord quality */}
-      <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:10, alignItems:"center" }}>
+      <span style={label}>Chord</span>
+      <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:16, alignItems:"center" }}>
         {Object.entries(ALL_QUALITIES).map(([k, v]) => {
           const locked = v.pro && !unlocked;
-          return <Btn key={k} active={quality===k} onClick={() => onQuality(k)} title={locked ? "Pro" : undefined}>{v.label}{locked && <Lock size={12} style={{ opacity:0.7 }} />}</Btn>;
+          return <Btn key={k} active={quality===k} onClick={() => onQuality(k)} title={locked ? "Pro" : undefined}>{v.label}{locked && <Lock size={12} style={{ opacity:0.6 }} />}</Btn>;
         })}
       </div>
 
       {/* tuning */}
-      <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:10, alignItems:"center" }}>
-        <span style={{ fontSize:11.5, fontWeight:600, color:MUTE, marginRight:2 }}>Tuning</span>
+      <span style={label}>Tuning</span>
+      <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:16, alignItems:"center" }}>
         {Object.entries(TUNINGS).map(([k, v]) => {
           const locked = v.pro && !unlocked, active = tuning===k;
           return (
             <button key={k} onClick={() => onTuning(k)} title={locked ? "Pro" : undefined} style={{ cursor:"pointer",
-              border:"1px solid", borderColor: active ? INDIGO : "#d7d8e0", background: active ? INDIGO : "#fff",
-              color: active ? "#fff" : INK, borderRadius:9, padding:"5px 10px", fontSize:12, fontWeight:600,
-              fontFamily:"Inter, sans-serif", display:"inline-flex", alignItems:"center", gap:4 }}>
-              {v.label}{locked && <Lock size={11} style={{ opacity:0.7 }} />}
+              border:"1px solid", borderColor: active ? INK : LINE, background: active ? INK : "#fff",
+              color: active ? "#fff" : INK, borderRadius:RAD, padding:"5px 10px", fontSize:12, fontWeight:600,
+              fontFamily:BODY, display:"inline-flex", alignItems:"center", gap:4 }}>
+              {v.label}{locked && <Lock size={11} style={{ opacity:0.6 }} />}
             </button>
           );
         })}
@@ -348,19 +361,16 @@ export default function App() {
 
       {/* view + octave + labels */}
       <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:16, alignItems:"center" }}>
-        <div style={{ display:"flex", gap:4, background:"#e7e8f0", borderRadius:10, padding:3 }}>
+        <div style={{ display:"flex", gap:2, border:`1px solid ${LINE}`, borderRadius:RAD, padding:2 }}>
           {[["shape","Shape"],["roam","Roam"]].map(([v,lab]) => {
             const locked = v==="roam" && !unlocked;
-            return <button key={v} onClick={() => onView(v)} style={{ cursor:"pointer", border:"none", borderRadius:8, padding:"6px 12px", fontSize:13, fontWeight:600,
-              background: view===v ? "#fff" : "transparent", color: view===v ? INK : "#7b7f8e", boxShadow: view===v ? "0 1px 2px rgba(0,0,0,.12)" : "none",
-              fontFamily:"Inter, sans-serif", display:"inline-flex", alignItems:"center", gap:4 }}>{lab}{locked && <Lock size={11} style={{ opacity:0.6 }}/>}</button>;
+            return <button key={v} onClick={() => onView(v)} style={{ ...segBtn(view===v), display:"inline-flex", alignItems:"center", gap:4 }}>{lab}{locked && <Lock size={11} style={{ opacity:0.6 }}/>}</button>;
           })}
         </div>
         {view==="shape" && (
-          <div style={{ display:"flex", gap:4, background:"#e7e8f0", borderRadius:10, padding:3 }}>
+          <div style={{ display:"flex", gap:2, border:`1px solid ${LINE}`, borderRadius:RAD, padding:2 }}>
             {[[1,"1 oct"],[2,"2 oct"]].map(([o,lab]) => (
-              <button key={o} onClick={() => setOctaves(o)} style={{ cursor:"pointer", border:"none", borderRadius:8, padding:"6px 12px", fontSize:13, fontWeight:600,
-                background: octaves===o ? "#fff" : "transparent", color: octaves===o ? INK : "#7b7f8e", boxShadow: octaves===o ? "0 1px 2px rgba(0,0,0,.12)" : "none", fontFamily:"Inter, sans-serif" }}>{lab}</button>
+              <button key={o} onClick={() => setOctaves(o)} style={segBtn(octaves===o)}>{lab}</button>
             ))}
           </div>
         )}
@@ -369,32 +379,32 @@ export default function App() {
       </div>
 
       {/* fretboard */}
-      <div style={{ background:"#fff", borderRadius:14, padding:"6px 4px 2px", boxShadow:"0 1px 3px rgba(26,31,46,.08)", overflowX:"auto" }}>
+      <div style={{ border:`1px solid ${LINE}`, borderRadius:RAD, padding:"8px 6px 4px", background:"#fff", overflowX:"auto" }}>
         <svg viewBox={`0 0 ${W} ${H}`} style={{ width:"100%", minWidth: view==="roam" ? 460 : "auto", height:"auto", display:"block" }}>
-          <rect x={ML} y={MT-6} width={nFrets*FW} height={5*SG+12} rx={6} fill={INK} />
-          {Array.from({length:nFrets+1},(_,i)=>i).map(i => <line key={i} x1={ML+i*FW} y1={MT-6} x2={ML+i*FW} y2={MT+5*SG+6} stroke="#3a4156" strokeWidth={2} />)}
+          <rect x={ML} y={MT-6} width={nFrets*FW} height={5*SG+12} rx={3} fill={NECK} stroke={LINE} strokeWidth={1} />
+          {Array.from({length:nFrets+1},(_,i)=>i).map(i => <line key={i} x1={ML+i*FW} y1={MT-6} x2={ML+i*FW} y2={MT+5*SG+6} stroke={FRET} strokeWidth={2} />)}
           {cols.map(col => {
             const fret = start + col; if (!inlayFrets.includes(fret)) return null;
             const x = ML + col*FW + FW/2; const dots = (fret % 12 === 0) ? [MT+1.5*SG, MT+3.5*SG] : [MT+2.5*SG];
-            return dots.map((y,j) => <circle key={col+"-"+j} cx={x} cy={y} r={4} fill="#2c3247" />);
+            return dots.map((y,j) => <circle key={col+"-"+j} cx={x} cy={y} r={4} fill={INLAY} />);
           })}
           {STR.map((s, si) => { const y = MT + si*SG; return (
             <g key={si}>
-              <line x1={ML} y1={y} x2={ML+nFrets*FW} y2={y} stroke="#9aa0b4" strokeWidth={0.8 + si*0.35} />
-              <text x={ML-12} y={y+4} fontSize={12} fill={MUTE} textAnchor="middle" fontFamily="Inter">{s.name}</text>
+              <line x1={ML} y1={y} x2={ML+nFrets*FW} y2={y} stroke={STRINGLINE} strokeWidth={0.8 + si*0.35} />
+              <text x={ML-12} y={y+4} fontSize={12} fill={GREY} textAnchor="middle" fontFamily="Inter">{s.name}</text>
             </g>); })}
           {STR.map((s, si) => cols.map(col => {
             const fret = start + col; const p = placed.get(si + "-" + fret); if (!p) return null;
             const x = ML + col*FW + FW/2, y = MT + si*SG;
             const isRoot = p.deg === 0, isDef = cell.defining.has(p.deg);
-            const label = showDeg ? DEG[p.deg] : NOTE_NAMES[p.pc];
+            const labelTxt = showDeg ? DEG[p.deg] : NOTE_NAMES[p.pc];
             return (
               <g key={si+"-"+col} style={{ cursor:"pointer" }} onClick={() => audio.pluck(noteFreq(si, fret))}>
-                <circle cx={x} cy={y} r={R} fill={isRoot ? GOLD : INDIGO} stroke={isDef && !isRoot ? GOLD : "transparent"} strokeWidth={isDef && !isRoot ? 2.5 : 0} />
-                <text x={x} y={y+4.5} fontSize={Math.min(13,R-2)} fontWeight={700} fill={isRoot ? INK : "#fff"} textAnchor="middle" fontFamily="Inter" style={{ pointerEvents:"none" }}>{label}</text>
+                <circle cx={x} cy={y} r={R} fill={isRoot ? ROOT : NOTECOL} stroke={isDef && !isRoot ? ROOT : "transparent"} strokeWidth={isDef && !isRoot ? 2.5 : 0} />
+                <text x={x} y={y+4.5} fontSize={Math.min(13,R-2)} fontWeight={700} fill="#fff" textAnchor="middle" fontFamily="Inter" style={{ pointerEvents:"none" }}>{labelTxt}</text>
               </g>);
           }))}
-          {cols.map(col => <text key={col} x={ML+col*FW+FW/2} y={MT+5*SG+26} fontSize={12} fill={MUTE} textAnchor="middle" fontFamily="Inter">{start+col}</text>)}
+          {cols.map(col => <text key={col} x={ML+col*FW+FW/2} y={MT+5*SG+26} fontSize={12} fill={GREY} textAnchor="middle" fontFamily="Inter">{start+col}</text>)}
         </svg>
       </div>
 
@@ -402,38 +412,38 @@ export default function App() {
       <div style={{ display:"flex", flexWrap:"wrap", gap:6, alignItems:"center", margin:"14px 0 4px" }}>
         {cell.intervals.map(iv => {
           const isRoot = iv===0, isDef = cell.defining.has(iv);
-          return <span key={iv} style={{ fontSize:12.5, fontWeight:600, padding:"4px 9px", borderRadius:20,
-            background: isRoot ? GOLD : "#eceaff", color: isRoot ? INK : INDIGO, border: isDef && !isRoot ? `1.5px solid ${GOLD}` : "1.5px solid transparent" }}>{DEG[iv]} · {NOTE_NAMES[(root+iv)%12]}</span>;
+          return <span key={iv} style={{ fontSize:12.5, fontWeight:600, padding:"4px 9px", borderRadius:RAD,
+            background: isRoot ? ROOT : FILL, color: isRoot ? "#fff" : INK, border: isDef && !isRoot ? `1.5px solid ${ROOT}` : "1.5px solid transparent" }}>{DEG[iv]} · {NOTE_NAMES[(root+iv)%12]}</span>;
         })}
       </div>
-      <p style={{ fontSize:11.5, color:MUTE, margin:"0 0 14px" }}>
-        Gold = root. Gold-ringed = the notes that make it sound {ALL_QUALITIES[quality].label.toLowerCase()}.
+      <p style={{ fontSize:11.5, color:GREY, margin:"0 0 18px", lineHeight:1.5 }}>
+        The amber dot is the root. Amber-ringed dots are the notes that make it sound {ALL_QUALITIES[quality].label.toLowerCase()}.
         {view==="roam" ? " Roam shows every place these notes live across the neck." : " Tap any note to hear it."}
       </p>
 
       {/* controls */}
       <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-        <button onClick={() => regenerate()} style={{ cursor:"pointer", flex:"1 1 140px", border:"none", background:INK, color:"#fff", borderRadius:11, padding:"12px", fontSize:14.5, fontWeight:600, fontFamily:"Poppins, sans-serif", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}><Shuffle size={17} /> New cell</button>
-        <button onClick={() => setDrone(d => !d)} style={{ cursor:"pointer", border:"1px solid", borderColor: drone ? INDIGO : "#d7d8e0", background: drone ? INDIGO : "#fff", color: drone ? "#fff" : INK, borderRadius:11, padding:"12px 16px", fontSize:14, fontWeight:600, display:"flex", alignItems:"center", gap:7 }}>{drone ? <Volume2 size={17}/> : <VolumeX size={17}/>} Drone</button>
-        <button onClick={() => audio.playShape(shape.map(p => noteFreq(p.si, p.fret)))} style={{ cursor:"pointer", border:"1px solid #d7d8e0", background:"#fff", color:INK, borderRadius:11, padding:"12px 16px", fontSize:14, fontWeight:600, display:"flex", alignItems:"center", gap:7 }}><Play size={16}/> Hear</button>
-        <button onClick={saveCell} title="Save cell" style={{ cursor:"pointer", border:"1px solid #d7d8e0", background:"#fff", color:INK, borderRadius:11, padding:"12px 14px", fontSize:14, fontWeight:600, display:"flex", alignItems:"center", gap:6 }}><Star size={16}/>{!unlocked && <Lock size={12} style={{opacity:.6}}/>}</button>
+        <button onClick={() => regenerate()} style={{ cursor:"pointer", flex:"1 1 140px", border:"none", background:INK, color:"#fff", borderRadius:RAD, padding:"12px", fontSize:14, fontWeight:700, fontFamily:BODY, display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}><Shuffle size={17} /> New cell</button>
+        <button onClick={() => setDrone(d => !d)} style={{ cursor:"pointer", border:"1px solid", borderColor: drone ? INK : LINE, background: drone ? INK : "#fff", color: drone ? "#fff" : INK, borderRadius:RAD, padding:"12px 16px", fontSize:14, fontWeight:600, display:"flex", alignItems:"center", gap:7 }}>{drone ? <Volume2 size={17}/> : <VolumeX size={17}/>} Drone</button>
+        <button onClick={() => audio.playShape(shape.map(p => noteFreq(p.si, p.fret)))} style={{ cursor:"pointer", border:`1px solid ${LINE}`, background:"#fff", color:INK, borderRadius:RAD, padding:"12px 16px", fontSize:14, fontWeight:600, display:"flex", alignItems:"center", gap:7 }}><Play size={16}/> Hear</button>
+        <button onClick={saveCell} title="Save cell" style={{ cursor:"pointer", border:`1px solid ${LINE}`, background:"#fff", color:INK, borderRadius:RAD, padding:"12px 14px", fontSize:14, fontWeight:600, display:"flex", alignItems:"center", gap:6 }}><Star size={16}/>{!unlocked && <Lock size={12} style={{opacity:.6}}/>}</button>
       </div>
 
       {/* favourites */}
       {unlocked && saved.length > 0 && (
-        <div style={{ marginTop:12 }}>
-          <button onClick={() => setShowFaves(f => !f)} style={{ cursor:"pointer", border:"none", background:"none", color:INDIGO, fontSize:13, fontWeight:600, padding:0, display:"inline-flex", alignItems:"center", gap:5 }}>
+        <div style={{ marginTop:14 }}>
+          <button onClick={() => setShowFaves(f => !f)} style={{ cursor:"pointer", border:"none", background:"none", color:INK, fontSize:13, fontWeight:700, padding:0, display:"inline-flex", alignItems:"center", gap:5 }}>
             <Star size={14}/> Saved cells ({saved.length}) {showFaves ? "▲" : "▼"}
           </button>
           {showFaves && (
             <div style={{ display:"flex", flexDirection:"column", gap:6, marginTop:8 }}>
               {saved.map(s => (
-                <div key={s.ts} style={{ display:"flex", alignItems:"center", gap:8, background:"#fff", borderRadius:9, padding:"8px 10px", boxShadow:"0 1px 2px rgba(26,31,46,.06)" }}>
-                  <button onClick={() => loadCell(s)} style={{ cursor:"pointer", border:"none", background:"none", textAlign:"left", flex:1, fontSize:13, color:INK, fontFamily:"Inter, sans-serif" }}>
+                <div key={s.ts} style={{ display:"flex", alignItems:"center", gap:8, background:"#fff", border:`1px solid ${LINE}`, borderRadius:RAD, padding:"8px 10px" }}>
+                  <button onClick={() => loadCell(s)} style={{ cursor:"pointer", border:"none", background:"none", textAlign:"left", flex:1, fontSize:13, color:INK, fontFamily:BODY }}>
                     <strong>{NOTE_NAMES[s.root]} {ALL_QUALITIES[s.quality].label}</strong>
-                    <span style={{ color:MUTE }}> · {TUNINGS[s.tuning].label} · {s.intervals.map(iv => DEG[iv]).join(" ")}</span>
+                    <span style={{ color:GREY }}> · {TUNINGS[s.tuning].label} · {s.intervals.map(iv => DEG[iv]).join(" ")}</span>
                   </button>
-                  <button onClick={() => delCell(s.ts)} title="Remove" style={{ cursor:"pointer", border:"none", background:"none", color:MUTE, padding:2, display:"flex" }}><Trash2 size={15}/></button>
+                  <button onClick={() => delCell(s.ts)} title="Remove" style={{ cursor:"pointer", border:"none", background:"none", color:GREY, padding:2, display:"flex" }}><Trash2 size={15}/></button>
                 </div>
               ))}
             </div>
@@ -441,35 +451,37 @@ export default function App() {
         </div>
       )}
 
+      <hr style={rule} />
+
       {/* practice mode */}
-      <div style={{ marginTop:14 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
-          <h3 style={{ margin:0, fontFamily:"Poppins, sans-serif", fontSize:15 }}>Practice Mode</h3>
-          {!unlocked && <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:11, fontWeight:600, color:GOLD, background:"#fff7e9", border:`1px solid ${GOLD}`, borderRadius:20, padding:"2px 8px" }}><Crown size={11}/> Pro</span>}
+      <div>
+        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
+          <h3 style={{ margin:0, fontFamily:HEAD, fontWeight:800, fontSize:15, textTransform:"uppercase", letterSpacing:0.3 }}>Practice Mode</h3>
+          {!unlocked && <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:10, fontWeight:700, color:"#fff", background:ROOT, borderRadius:RAD, padding:"2px 8px", textTransform:"uppercase", letterSpacing:0.5 }}><Crown size={11}/> Pro</span>}
         </div>
         {unlocked ? (
-          <div style={{ background:"#fff", borderRadius:12, padding:"14px 16px", boxShadow:"0 1px 3px rgba(26,31,46,.08)" }}>
-            <p style={{ margin:"0 0 12px", fontSize:13, color:"#5b5f6e" }}>Hands-free: a click keeps time and a fresh cell appears every few bars. Start it, pick up the guitar, and play.</p>
+          <div style={{ border:`1px solid ${LINE}`, borderRadius:RAD, padding:"14px 16px" }}>
+            <p style={{ margin:"0 0 12px", fontSize:13, color:GREY, lineHeight:1.55 }}>Hands-free: a click keeps time and a fresh cell appears every few bars. Start it, pick up the guitar, and play.</p>
             <div style={{ display:"flex", gap:18, flexWrap:"wrap", alignItems:"center", marginBottom:14 }}>
               <label style={{ fontSize:13, fontWeight:600 }}>Tempo: {bpm} BPM
-                <input type="range" min={50} max={160} value={bpm} onChange={e => setBpm(+e.target.value)} style={{ display:"block", width:180, marginTop:4, accentColor:INDIGO }} /></label>
+                <input type="range" min={50} max={160} value={bpm} onChange={e => setBpm(+e.target.value)} style={{ display:"block", width:180, marginTop:4, accentColor:INK }} /></label>
               <label style={{ fontSize:13, fontWeight:600 }}>New cell every
-                <select value={barsPerCell} onChange={e => setBarsPerCell(+e.target.value)} style={{ display:"block", marginTop:4, padding:"6px 8px", borderRadius:8, border:"1px solid #d7d8e0", fontSize:13 }}>
+                <select value={barsPerCell} onChange={e => setBarsPerCell(+e.target.value)} style={{ display:"block", marginTop:4, padding:"6px 8px", borderRadius:RAD, border:`1px solid ${LINE}`, fontSize:13, fontFamily:BODY }}>
                   <option value={1}>1 bar</option><option value={2}>2 bars</option><option value={4}>4 bars</option><option value={8}>8 bars</option></select></label>
             </div>
-            <button onClick={() => setPracticeOn(p => !p)} style={{ cursor:"pointer", border:"none", background: practiceOn ? "#b91c1c" : INDIGO, color:"#fff", borderRadius:11, padding:"11px 20px", fontSize:14, fontWeight:600, fontFamily:"Poppins, sans-serif", display:"inline-flex", alignItems:"center", gap:7 }}>{practiceOn ? <><Square size={15}/> Stop</> : <><Play size={15}/> Start practice</>}</button>
+            <button onClick={() => setPracticeOn(p => !p)} style={{ cursor:"pointer", border:"none", background: practiceOn ? "#b91c1c" : INK, color:"#fff", borderRadius:RAD, padding:"11px 20px", fontSize:14, fontWeight:700, fontFamily:BODY, display:"inline-flex", alignItems:"center", gap:7 }}>{practiceOn ? <><Square size={15}/> Stop</> : <><Play size={15}/> Start practice</>}</button>
           </div>
         ) : (
-          <div style={{ background:"#fff", borderRadius:12, padding:"16px", boxShadow:"0 1px 3px rgba(26,31,46,.08)", textAlign:"center" }}>
-            <p style={{ margin:"0 0 12px", fontSize:13.5, color:"#5b5f6e" }}>Set a tempo and let cells auto-advance while a click keeps time — a hands-free practice companion for your music stand.</p>
-            <button onClick={() => setShowUnlock(true)} style={{ cursor:"pointer", border:"none", background:GOLD, color:INK, borderRadius:11, padding:"10px 18px", fontSize:14, fontWeight:600, fontFamily:"Poppins, sans-serif", display:"inline-flex", alignItems:"center", gap:6 }}><Crown size={15}/> Unlock with Pro</button>
+          <div style={{ border:`1px solid ${LINE}`, borderRadius:RAD, padding:"16px", textAlign:"center" }}>
+            <p style={{ margin:"0 0 12px", fontSize:13.5, color:GREY, lineHeight:1.55 }}>Set a tempo and let cells auto-advance while a click keeps time — a hands-free practice companion for your music stand.</p>
+            <button onClick={() => setShowUnlock(true)} style={{ cursor:"pointer", border:"none", background:ROOT, color:"#fff", borderRadius:RAD, padding:"10px 18px", fontSize:14, fontWeight:700, fontFamily:BODY, display:"inline-flex", alignItems:"center", gap:6 }}><Crown size={15}/> Unlock with Pro</button>
           </div>
         )}
       </div>
 
       {/* prompt */}
-      <div style={{ marginTop:14, background:"#eceaff", borderRadius:11, padding:"12px 14px", borderLeft:`4px solid ${INDIGO}` }}>
-        <div style={{ fontSize:10.5, letterSpacing:1.5, textTransform:"uppercase", color:INDIGO, fontWeight:600, marginBottom:3 }}>Your challenge</div>
+      <div style={{ marginTop:16, background:FILL, padding:"12px 14px", borderLeft:`3px solid ${INK}` }}>
+        <div style={{ ...eyebrow, marginBottom:4 }}>Your challenge</div>
         <div style={{ fontSize:14, color:INK }}>{prompt}</div>
       </div>
     </div>
