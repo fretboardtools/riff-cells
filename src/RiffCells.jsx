@@ -280,7 +280,7 @@ export default function App() {
     background: on ? INK : "transparent", color: on ? "#fff" : GREY, fontFamily:BODY });
 
   return (
-    <div style={{ fontFamily:BODY, color:INK, background:"transparent", padding:"8px 0", maxWidth:600, margin:"0 auto" }}>
+    <div style={{ fontFamily:BODY, color:INK, background:"transparent", padding:"32px 2px 40px", maxWidth:600, margin:"0 auto" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
         button:focus-visible{outline:2px solid ${INK};outline-offset:2px}`}</style>
 
@@ -379,7 +379,7 @@ export default function App() {
       </div>
 
       {/* fretboard */}
-      <div style={{ border:`1px solid ${LINE}`, borderRadius:RAD, padding:"8px 6px 4px", background:"#fff", overflowX:"auto" }}>
+      <div style={{ padding:"4px 0", overflowX:"auto" }}>
         <svg viewBox={`0 0 ${W} ${H}`} style={{ width:"100%", minWidth: view==="roam" ? 460 : "auto", height:"auto", display:"block" }}>
           <rect x={ML} y={MT-6} width={nFrets*FW} height={5*SG+12} rx={3} fill={NECK} stroke={LINE} strokeWidth={1} />
           {Array.from({length:nFrets+1},(_,i)=>i).map(i => <line key={i} x1={ML+i*FW} y1={MT-6} x2={ML+i*FW} y2={MT+5*SG+6} stroke={FRET} strokeWidth={2} />)}
@@ -436,9 +436,9 @@ export default function App() {
             <Star size={14}/> Saved cells ({saved.length}) {showFaves ? "▲" : "▼"}
           </button>
           {showFaves && (
-            <div style={{ display:"flex", flexDirection:"column", gap:6, marginTop:8 }}>
+            <div style={{ display:"flex", flexDirection:"column", gap:0, marginTop:8, borderTop:`1px solid ${LINE}` }}>
               {saved.map(s => (
-                <div key={s.ts} style={{ display:"flex", alignItems:"center", gap:8, background:"#fff", border:`1px solid ${LINE}`, borderRadius:RAD, padding:"8px 10px" }}>
+                <div key={s.ts} style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 2px", borderBottom:`1px solid ${LINE}` }}>
                   <button onClick={() => loadCell(s)} style={{ cursor:"pointer", border:"none", background:"none", textAlign:"left", flex:1, fontSize:13, color:INK, fontFamily:BODY }}>
                     <strong>{NOTE_NAMES[s.root]} {ALL_QUALITIES[s.quality].label}</strong>
                     <span style={{ color:GREY }}> · {TUNINGS[s.tuning].label} · {s.intervals.map(iv => DEG[iv]).join(" ")}</span>
@@ -460,7 +460,7 @@ export default function App() {
           {!unlocked && <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:10, fontWeight:700, color:"#fff", background:ROOT, borderRadius:RAD, padding:"2px 8px", textTransform:"uppercase", letterSpacing:0.5 }}><Crown size={11}/> Pro</span>}
         </div>
         {unlocked ? (
-          <div style={{ border:`1px solid ${LINE}`, borderRadius:RAD, padding:"14px 16px" }}>
+          <div style={{ padding:"2px 0" }}>
             <p style={{ margin:"0 0 12px", fontSize:13, color:GREY, lineHeight:1.55 }}>Hands-free: a click keeps time and a fresh cell appears every few bars. Start it, pick up the guitar, and play.</p>
             <div style={{ display:"flex", gap:18, flexWrap:"wrap", alignItems:"center", marginBottom:14 }}>
               <label style={{ fontSize:13, fontWeight:600 }}>Tempo: {bpm} BPM
@@ -472,7 +472,7 @@ export default function App() {
             <button onClick={() => setPracticeOn(p => !p)} style={{ cursor:"pointer", border:"none", background: practiceOn ? "#b91c1c" : INK, color:"#fff", borderRadius:RAD, padding:"11px 20px", fontSize:14, fontWeight:700, fontFamily:BODY, display:"inline-flex", alignItems:"center", gap:7 }}>{practiceOn ? <><Square size={15}/> Stop</> : <><Play size={15}/> Start practice</>}</button>
           </div>
         ) : (
-          <div style={{ border:`1px solid ${LINE}`, borderRadius:RAD, padding:"16px", textAlign:"center" }}>
+          <div style={{ padding:"2px 0" }}>
             <p style={{ margin:"0 0 12px", fontSize:13.5, color:GREY, lineHeight:1.55 }}>Set a tempo and let cells auto-advance while a click keeps time — a hands-free practice companion for your music stand.</p>
             <button onClick={() => setShowUnlock(true)} style={{ cursor:"pointer", border:"none", background:ROOT, color:"#fff", borderRadius:RAD, padding:"10px 18px", fontSize:14, fontWeight:700, fontFamily:BODY, display:"inline-flex", alignItems:"center", gap:6 }}><Crown size={15}/> Unlock with Pro</button>
           </div>
