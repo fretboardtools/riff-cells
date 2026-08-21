@@ -45,6 +45,8 @@ const PRO_QUALITIES = {
   sus4: { label: "Sus 4",  pro: true, required: [5, 7],     pool: [2, 10, 9, 4] },
   sus2: { label: "Sus 2",  pro: true, required: [2, 7],     pool: [5, 10, 9, 4] },
   alt:  { label: "Altered",pro: true, required: [4, 10],    pool: [1, 3, 6, 8] },
+  mMaj7:{ label: "mMaj7",  pro: true, required: [3, 7, 11], pool: [2, 5, 9, 8] },
+  maj7s5:{label: "Maj7♯5", pro: true, required: [4, 8, 11], pool: [2, 9, 6, 5] },
 };
 const ALL_QUALITIES = { ...FREE_QUALITIES, ...PRO_QUALITIES };
 
