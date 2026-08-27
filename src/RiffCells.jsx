@@ -8,8 +8,17 @@ const DEV_UNLOCK_ALL = false;
 const PRO_BUY_URL = "https://payhip.com/b/YOUR-PRO-PRODUCT";
 
 const store = {
-  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
-  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  get(k) {
+    try { const v = localStorage.getItem(k); if (v !== null) return v; } catch {}
+    try {
+      const m = document.cookie.match(new RegExp("(?:^|; )" + k + "=([^;]*)"));
+      return m ? decodeURIComponent(m[1]) : null;
+    } catch { return null; }
+  },
+  set(k, v) {
+    try { localStorage.setItem(k, v); } catch {}
+    try { document.cookie = k + "=" + encodeURIComponent(v) + "; path=/; max-age=31536000; SameSite=Lax"; } catch {}
+  },
 };
 
 // ---- music theory ----------------------------------------------------------
@@ -220,6 +229,22 @@ export default function App() {
 
   useEffect(() => { if (drone) audio.startDrone(root); else audio.stopDrone(); }, [drone, root]); // eslint-disable-line
   useEffect(() => { store.set("rc_saved", JSON.stringify(saved)); }, [saved]);
+
+  // Remember Pro across sessions: if a key is saved, restore silently instead
+  // of re-prompting. Backfills the cookie mirror for users activated earlier.
+  useEffect(() => {
+    const key = store.get("rc_key");
+    if (!key) return;
+    if (isPro) { store.set("rc_pro", "1"); store.set("rc_key", key); return; }
+    if (DEV_UNLOCK_ALL) return;
+    (async () => {
+      try {
+        const res = await fetch("/api/verify-license", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ license_key: key }) });
+        const data = await res.json();
+        if (data.valid) { setIsPro(true); store.set("rc_pro", "1"); store.set("rc_key", key); }
+      } catch {}
+    })();
+  }, []); // eslint-disable-line
 
   useEffect(() => {
     if (!practiceOn || !unlocked) return;
