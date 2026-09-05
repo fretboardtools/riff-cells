@@ -76,11 +76,22 @@ const pick = (arr, n) => {
   return out;
 };
 
-function buildCell(rootPc, quality) {
+function buildCell(rootPc, quality, noteCount = 5) {
   const q = ALL_QUALITIES[quality];
-  const fill = pick(q.pool, 5 - 1 - q.required.length);
-  const intervals = Array.from(new Set([0, ...q.required, ...fill])).sort((a,b)=>a-b);
-  return { intervals, defining: new Set(q.required) };
+  const req = q.required;
+  if (noteCount > req.length + 1) {
+    // room to spare: keep all chord tones, randomise the colour notes
+    const fill = pick(q.pool, noteCount - 1 - req.length);
+    const intervals = Array.from(new Set([0, ...req, ...fill])).sort((a,b)=>a-b);
+    return { intervals, defining: new Set(req) };
+  }
+  // tight count: randomise which notes appear, but keep root + at least one defining tone
+  const out = new Set([0]);
+  if (req.length) out.add(req[Math.floor(Math.random() * req.length)]);
+  const cand = pick([...new Set([...req, ...q.pool])].filter(x => !out.has(x)), noteCount);
+  for (const c of cand) { if (out.size >= noteCount) break; out.add(c); }
+  const intervals = Array.from(out).sort((a,b)=>a-b);
+  return { intervals, defining: new Set(req.filter(r => out.has(r))) };
 }
 
 // ascending fingering, tuning-aware
@@ -162,9 +173,9 @@ function useAudio() {
 }
 
 // ---- component -------------------------------------------------------------
-const INK = "#2b2926", GREY = "#8a8781", LINE = "#e2dfda", FILL = "#f1efeb";
-const NECK = "#f3f1ec", FRET = "#ccc7bf", STRINGLINE = "#b3aea6", INLAY = "#e0dbd3";
-const ROOT = "#d98a4f", NOTECOL = "#7d88c4";
+const INK = "#1c1a17", GREY = "#8a8781", LINE = "#e8e5df", FILL = "#f4f2ed";
+const NECK = "#f6f4ef", FRET = "#cbc6bd", STRINGLINE = "#b0aaa1", INLAY = "#e3ded6";
+const ROOT = "#cf823f", NOTECOL = "#6f7ac2";
 const RAD = 2;
 const HEAD = "'Archivo', system-ui, sans-serif";
 const BODY = "'Inter', system-ui, sans-serif";
@@ -180,6 +191,8 @@ export default function App() {
   const [view, setView] = useState("shape");
   const [showDeg, setShowDeg] = useState(true);
   const [octaves, setOctaves] = useState(1);
+  const [noteCount, setNoteCount] = useState(5);
+  const [position, setPosition] = useState("off"); // "off" or a base fret number
   const [cell, setCell] = useState(() => buildCell(9, "dom7"));
   const [prompt, setPrompt] = useState(PROMPTS[0]);
   const [drone, setDrone] = useState(false);
@@ -212,6 +225,16 @@ export default function App() {
         if (pcs.has(pc)) lit.push({ si, fret: f, pc, deg: (pc - root + 12) % 12 });
       }
     }
+  } else if (position !== "off") {
+    const base = position, span = 4;
+    start = Math.max(0, base); nFrets = span + 1;
+    lit = [];
+    for (let si = 0; si < STR.length; si++) {
+      for (let f = base; f <= base + span; f++) {
+        const pc = (STR[si].openPc + f) % 12;
+        if (pcs.has(pc)) lit.push({ si, fret: f, pc, deg: (pc - root + 12) % 12 });
+      }
+    }
   } else {
     lit = shape;
     const fr = shape.map(p => p.fret);
@@ -220,12 +243,24 @@ export default function App() {
   }
   const placed = new Map(lit.map(p => [p.si + "-" + p.fret, p]));
 
-  const regenerate = useCallback((r = root, q = quality) => {
-    setCell(buildCell(r, q)); setPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
-  }, [root, quality]);
+  const regenerate = useCallback((r = root, q = quality, n = noteCount) => {
+    setCell(prev => {
+      let c = buildCell(r, q, n);
+      for (let i = 0; i < 8 && prev && c.intervals.join() === prev.intervals.join(); i++) c = buildCell(r, q, n);
+      return c;
+    });
+    setPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
+  }, [root, quality, noteCount]);
 
   const genRef = useRef();
-  genRef.current = () => { setCell(buildCell(root, quality)); setPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]); };
+  genRef.current = () => {
+    setCell(prev => {
+      let c = buildCell(root, quality, noteCount);
+      for (let i = 0; i < 8 && prev && c.intervals.join() === prev.intervals.join(); i++) c = buildCell(root, quality, noteCount);
+      return c;
+    });
+    setPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
+  };
 
   useEffect(() => { if (drone) audio.startDrone(root); else audio.stopDrone(); }, [drone, root]); // eslint-disable-line
   useEffect(() => { store.set("rc_saved", JSON.stringify(saved)); }, [saved]);
@@ -256,6 +291,8 @@ export default function App() {
 
   const onRoot = (pc) => { setRoot(pc); regenerate(pc, quality); };
   const onQuality = (q) => { if (ALL_QUALITIES[q].pro && !unlocked) { setShowUnlock(true); return; } setQuality(q); regenerate(root, q); };
+  const onNoteCount = (n) => { setNoteCount(n); regenerate(root, quality, n); };
+  const onPosition = (p) => setPosition(p);
   const onTuning = (t) => { if (TUNINGS[t].pro && !unlocked) { setShowUnlock(true); return; } setTuning(t); };
   const onView = (v) => { if (v === "roam" && !unlocked) { setShowUnlock(true); return; } setView(v); };
 
@@ -307,9 +344,14 @@ export default function App() {
     background: on ? INK : "transparent", color: on ? "#fff" : GREY, fontFamily:BODY });
 
   return (
-    <div style={{ fontFamily:BODY, color:INK, background:"transparent", padding:"32px 2px 40px", maxWidth:600, margin:"0 auto" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
-        button:focus-visible{outline:2px solid ${INK};outline-offset:2px}`}</style>
+    <div className="rc" style={{ fontFamily:BODY, color:INK, background:"transparent", padding:"36px 2px 44px", maxWidth:620, margin:"0 auto" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+        .rc{ -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+        .rc button{ transition:background .15s ease, border-color .15s ease, color .15s ease, transform .04s ease, filter .15s ease; }
+        .rc button:not(:disabled):hover{ filter:brightness(0.96); }
+        .rc button:active{ transform:translateY(1px); }
+        .rc button:focus-visible{ outline:2px solid ${INK}; outline-offset:2px; }
+        .rc svg text{ font-variant-numeric:tabular-nums; }`}</style>
 
       {DEV_UNLOCK_ALL && (
         <div style={{ background:"#b91c1c", color:"#fff", fontSize:12, fontWeight:600, textAlign:"center", padding:"6px 10px", marginBottom:14 }}>
@@ -320,7 +362,7 @@ export default function App() {
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
         <div>
           <span style={eyebrow}>Unlock the Guitar</span>
-          <h1 style={{ fontFamily:HEAD, fontWeight:800, fontSize:27, letterSpacing:0.3, textTransform:"uppercase", margin:"3px 0 0", color:INK }}>Riff Cells</h1>
+          <h1 style={{ fontFamily:HEAD, fontWeight:900, fontSize:30, letterSpacing:1.5, textTransform:"uppercase", margin:"4px 0 0", color:INK }}>Riff Cells</h1>
         </div>
         {isPro
           ? <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#fff", background:ROOT, borderRadius:RAD, padding:"5px 10px", height:"fit-content", fontFamily:BODY, letterSpacing:1, textTransform:"uppercase" }}><Crown size={13}/> Pro</span>
@@ -386,15 +428,20 @@ export default function App() {
         })}
       </div>
 
-      {/* view + octave + labels */}
-      <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:16, alignItems:"center" }}>
+      {/* view + octave + notes + labels */}
+      <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:12, alignItems:"center" }}>
         <div style={{ display:"flex", gap:2, border:`1px solid ${LINE}`, borderRadius:RAD, padding:2 }}>
           {[["shape","Shape"],["roam","Roam"]].map(([v,lab]) => {
             const locked = v==="roam" && !unlocked;
             return <button key={v} onClick={() => onView(v)} style={{ ...segBtn(view===v), display:"inline-flex", alignItems:"center", gap:4 }}>{lab}{locked && <Lock size={11} style={{ opacity:0.6 }}/>}</button>;
           })}
         </div>
-        {view==="shape" && (
+        <div style={{ display:"flex", gap:2, border:`1px solid ${LINE}`, borderRadius:RAD, padding:2 }} title="How many notes in the cell — fewer is harder">
+          {[3,4,5].map(n => (
+            <button key={n} onClick={() => onNoteCount(n)} style={segBtn(noteCount===n)}>{n}</button>
+          ))}
+        </div>
+        {view==="shape" && position==="off" && (
           <div style={{ display:"flex", gap:2, border:`1px solid ${LINE}`, borderRadius:RAD, padding:2 }}>
             {[[1,"1 oct"],[2,"2 oct"]].map(([o,lab]) => (
               <button key={o} onClick={() => setOctaves(o)} style={segBtn(octaves===o)}>{lab}</button>
@@ -405,10 +452,27 @@ export default function App() {
         <Btn active={showDeg} onClick={() => setShowDeg(!showDeg)}>{showDeg ? "Degrees" : "Notes"}</Btn>
       </div>
 
+      {/* position lock */}
+      {view!=="roam" && (
+        <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:16, alignItems:"center" }}>
+          <span style={{ ...eyebrow, marginRight:2 }}>Position</span>
+          {[["off","Free"],[0,"Open"],[3,"3"],[5,"5"],[7,"7"],[9,"9"],[12,"12"]].map(([p,lab]) => {
+            const active = position===p;
+            return (
+              <button key={String(p)} onClick={() => onPosition(p)} style={{ cursor:"pointer",
+                border:"1px solid", borderColor: active ? INK : LINE, background: active ? INK : "#fff",
+                color: active ? "#fff" : INK, borderRadius:RAD, padding:"5px 10px", fontSize:12, fontWeight:600, fontFamily:BODY }}>
+                {lab}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* fretboard */}
       <div style={{ padding:"4px 0", overflowX:"auto" }}>
         <svg viewBox={`0 0 ${W} ${H}`} style={{ width:"100%", minWidth: view==="roam" ? 460 : "auto", height:"auto", display:"block" }}>
-          <rect x={ML} y={MT-6} width={nFrets*FW} height={5*SG+12} rx={3} fill={NECK} stroke={LINE} strokeWidth={1} />
+          <rect x={ML} y={MT-6} width={nFrets*FW} height={5*SG+12} rx={7} fill={NECK} stroke={LINE} strokeWidth={1} />
           {Array.from({length:nFrets+1},(_,i)=>i).map(i => <line key={i} x1={ML+i*FW} y1={MT-6} x2={ML+i*FW} y2={MT+5*SG+6} stroke={FRET} strokeWidth={2} />)}
           {cols.map(col => {
             const fret = start + col; if (!inlayFrets.includes(fret)) return null;
