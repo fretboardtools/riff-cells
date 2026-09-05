@@ -412,6 +412,16 @@ export default function App() {
         })}
       </div>
 
+      {/* note count */}
+      <span style={label}>Notes</span>
+      <div style={{ display:"flex", gap:6, marginBottom:16, alignItems:"center" }} title="How many notes in the cell — fewer is harder">
+        {[3,4,5].map(n => (
+          <button key={n} onClick={() => onNoteCount(n)} style={{ cursor:"pointer",
+            border:"1px solid", borderColor: noteCount===n ? INK : LINE, background: noteCount===n ? INK : "#fff",
+            color: noteCount===n ? "#fff" : INK, borderRadius:RAD, padding:"6px 15px", fontSize:13, fontWeight:600, fontFamily:BODY }}>{n}</button>
+        ))}
+      </div>
+
       {/* tuning */}
       <span style={label}>Tuning</span>
       <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:16, alignItems:"center" }}>
@@ -428,18 +438,16 @@ export default function App() {
         })}
       </div>
 
-      {/* view + octave + notes + labels */}
-      <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:12, alignItems:"center" }}>
+      <hr style={rule} />
+
+      {/* view + octave + labels */}
+      <span style={label}>View</span>
+      <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:16, alignItems:"center" }}>
         <div style={{ display:"flex", gap:2, border:`1px solid ${LINE}`, borderRadius:RAD, padding:2 }}>
           {[["shape","Shape"],["roam","Roam"]].map(([v,lab]) => {
             const locked = v==="roam" && !unlocked;
             return <button key={v} onClick={() => onView(v)} style={{ ...segBtn(view===v), display:"inline-flex", alignItems:"center", gap:4 }}>{lab}{locked && <Lock size={11} style={{ opacity:0.6 }}/>}</button>;
           })}
-        </div>
-        <div style={{ display:"flex", gap:2, border:`1px solid ${LINE}`, borderRadius:RAD, padding:2 }} title="How many notes in the cell — fewer is harder">
-          {[3,4,5].map(n => (
-            <button key={n} onClick={() => onNoteCount(n)} style={segBtn(noteCount===n)}>{n}</button>
-          ))}
         </div>
         {view==="shape" && position==="off" && (
           <div style={{ display:"flex", gap:2, border:`1px solid ${LINE}`, borderRadius:RAD, padding:2 }}>
