@@ -325,7 +325,8 @@ export default function App() {
 
   const FW = Math.max(28, Math.min(92, Math.round(420 / nFrets)));
   const R  = Math.max(11, Math.min(17, Math.round(FW / 2) - 6));
-  const ML = 30, MT = 26, SG = 44;
+  const ML = 30, MT = 26;
+  const SG = Math.max(32, Math.min(46, FW + 8)); // string gap tracks fret width — keeps Roam proportional
   const W = ML + nFrets * FW + 24, H = MT + 5 * SG + 46;
   const cols = Array.from({ length: nFrets }, (_, i) => i);
   const inlayFrets = [3,5,7,9,12,15,17];
