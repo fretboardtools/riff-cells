@@ -458,7 +458,11 @@ export default function App() {
           </div>
         )}
         <span style={{ flex:1 }} />
-        <Btn active={showDeg} onClick={() => setShowDeg(!showDeg)}>{showDeg ? "Degrees" : "Notes"}</Btn>
+        <div style={{ display:"flex", gap:2, border:`1px solid ${LINE}`, borderRadius:RAD, padding:2 }} title="Label the dots with scale degrees or note names">
+          {[[true,"Degrees"],[false,"Notes"]].map(([val,lab]) => (
+            <button key={lab} onClick={() => setShowDeg(val)} style={segBtn(showDeg===val)}>{lab}</button>
+          ))}
+        </div>
       </div>
 
       {/* position lock */}
